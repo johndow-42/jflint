@@ -1,0 +1,23 @@
+// Invalid on purpose: a stage that uses `parallel` may not also declare its
+// own `agent` in Declarative Pipeline. This is a real gotcha (not a made-up
+// example) documented from a production Jenkins pipeline.
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent any
+            parallel {
+                stage('Windows') {
+                    steps {
+                        echo 'building on windows'
+                    }
+                }
+                stage('Linux') {
+                    steps {
+                        echo 'building on linux'
+                    }
+                }
+            }
+        }
+    }
+}

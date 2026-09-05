@@ -1,0 +1,18 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # ubuntu-latest ships Docker preinstalled, which is what lets the
+    # integration tests actually exercise the real jenkins/jenkinsfile-runner
+    # image instead of only running the Docker-free unit tests.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test test/
