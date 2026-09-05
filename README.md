@@ -1,10 +1,12 @@
-# jflint
+# jenkinsfile-lint
 
-One-command offline linting for declarative Jenkinsfiles. No Jenkins server, no credentials, no network access to any CI system.
+One-command offline linting for declarative Jenkinsfiles. No Jenkins server, no credentials, no network access to any CI system. Installs the `jflint` command.
 
 ## Why this exists
 
-The most-installed VS Code extension for Jenkinsfile validation ([Jenkins Pipeline Linter Connector](https://marketplace.visualstudio.com/items?itemName=janjoerke.jenkins-pipeline-linter-connector), 270k+ installs) only works by sending your file to a reachable Jenkins server. The official offline tool, [`jenkinsfile-runner`](https://github.com/jenkinsci/jenkinsfile-runner), already ships a `lint` command, but using it means assembling a matching Jenkins WAR and plugin set by hand, and its Docker CLI mode is confusing enough that real users get stuck on it (see [issue #461](https://github.com/jenkinsci/jenkinsfile-runner/issues/461)) — and years after the `lint` command shipped, it still has no dedicated documentation page ([issue #521](https://github.com/jenkinsci/jenkinsfile-runner/issues/521)).
+The most-installed VS Code extension for Jenkinsfile validation ([Jenkins Pipeline Linter Connector](https://marketplace.visualstudio.com/items?itemName=janjoerke.jenkins-pipeline-linter-connector), 270k+ installs) only works by sending your file to a reachable Jenkins server. There's also an older npm package literally called [`jflint`](https://www.npmjs.com/package/jflint) (2017, last released 2018) — its own README says it plainly: "This tool itself does not lint a Jenkinsfile, but sends a request to Jenkins in the same way as curl approach", so it has the same reachable-server requirement. That name was already taken, which is why this package is published as `jenkinsfile-lint` even though the command it installs is still the shorter `jflint`.
+
+The official offline tool, [`jenkinsfile-runner`](https://github.com/jenkinsci/jenkinsfile-runner), already ships a `lint` command, but using it means assembling a matching Jenkins WAR and plugin set by hand, and its Docker CLI mode is confusing enough that real users get stuck on it (see [issue #461](https://github.com/jenkinsci/jenkinsfile-runner/issues/461)) — and years after the `lint` command shipped, it still has no dedicated documentation page ([issue #521](https://github.com/jenkinsci/jenkinsfile-runner/issues/521)).
 
 `jflint` doesn't reimplement pipeline validation — it wraps the official `jenkins/jenkinsfile-runner` Docker image (which already bundles a Jenkins WAR and a minimal plugin set) behind one command with readable output, so the underlying validation is the same one your real Jenkins server would run.
 
@@ -18,12 +20,16 @@ It also works around a real, currently open bug in that official image: invoking
 ## Usage
 
 ```
-npx jflint                       # lints ./Jenkinsfile
-npx jflint path/to/Jenkinsfile
-npx jflint --pull                # pull the image first (do this on first run)
-npx jflint --plugins ./plugins   # lint against your own plugin set, not just the minimal Vanilla one
-npx jflint --raw                 # show full, unfiltered jenkinsfile-runner output
+npm install -g jenkinsfile-lint   # installs the `jflint` command
+
+jflint                       # lints ./Jenkinsfile
+jflint path/to/Jenkinsfile
+jflint --pull                # pull the image first (do this on first run)
+jflint --plugins ./plugins   # lint against your own plugin set, not just the minimal Vanilla one
+jflint --raw                 # show full, unfiltered jenkinsfile-runner output
 ```
+
+Without a global install, use `npx -p jenkinsfile-lint jflint` — plain `npx jflint` would resolve to the unrelated, older `jflint` package on npm (see above) instead of this one.
 
 Exit code is `0` when the Jenkinsfile is valid, non-zero otherwise — safe to use as a pre-commit hook or a CI step.
 

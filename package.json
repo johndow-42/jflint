@@ -1,9 +1,17 @@
 {
-  "name": "jflint",
+  "name": "jenkinsfile-lint",
   "version": "0.1.0",
   "description": "One-command offline linting for declarative Jenkinsfiles, wrapping the official jenkinsfile-runner Docker image with clear errors and no manual Jenkins setup.",
   "license": "MIT",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johndow-42/jflint.git"
+  },
+  "homepage": "https://github.com/johndow-42/jflint#readme",
+  "bugs": {
+    "url": "https://github.com/johndow-42/jflint/issues"
+  },
   "bin": {
     "jflint": "bin/jflint.js"
   },
