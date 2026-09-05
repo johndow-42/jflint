@@ -10,10 +10,15 @@ jobs:
     # integration tests actually exercise the real jenkins/jenkinsfile-runner
     # image instead of only running the Docker-free unit tests.
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # engines.node in package.json claims >=18, so this actually proves it
+        # instead of testing only one version.
+        node-version: ['18', '20', '22', '24']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node-version }}
       - run: docker pull jenkins/jenkinsfile-runner
-      - run: node --test test/
+      - run: node --test test/*.test.js

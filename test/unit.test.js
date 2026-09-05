@@ -28,6 +28,23 @@ test('parseArgs recognizes --help and --version', () => {
   assert.equal(parseArgs(['--version']).version, true);
 });
 
+test('parseArgs rejects --image with a missing value instead of guessing', () => {
+  assert.throws(() => parseArgs(['--image']), /--image requires a value/);
+  assert.throws(() => parseArgs(['--image', '--pull']), /--image requires a value/);
+});
+
+test('parseArgs rejects --plugins with a missing value instead of guessing', () => {
+  assert.throws(() => parseArgs(['--plugins']), /--plugins requires a directory path/);
+});
+
+test('parseArgs rejects unknown flags instead of treating them as the Jenkinsfile path', () => {
+  assert.throws(() => parseArgs(['--nope']), /Unknown option: --nope/);
+});
+
+test('parseArgs rejects more than one positional argument instead of silently dropping extras', () => {
+  assert.throws(() => parseArgs(['a/Jenkinsfile', 'b/Jenkinsfile']), /at most one Jenkinsfile path/);
+});
+
 test('buildLintArgs mounts the workspace and points -w/-p at the image\'s bundled Jenkins install', () => {
   const args = buildLintArgs({
     workspaceDir: '/home/user/project',
