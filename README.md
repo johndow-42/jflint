@@ -8,6 +8,8 @@ The most-installed VS Code extension for Jenkinsfile validation ([Jenkins Pipeli
 
 `jflint` doesn't reimplement pipeline validation — it wraps the official `jenkins/jenkinsfile-runner` Docker image (which already bundles a Jenkins WAR and a minimal plugin set) behind one command with readable output, so the underlying validation is the same one your real Jenkins server would run.
 
+It also works around a real, currently open bug in that official image: invoking it with a custom command (like `lint`) drops the image's default `-w`/`-p` flags, which makes `jenkinsfile-runner` fall back to downloading a fresh Jenkins WAR over HTTPS at container startup — and on the `latest` tag (last published in 2022, no newer tag exists), that download fails with an SSL handshake error because the image's embedded Java runtime has an outdated CA trust store ([issue #738](https://github.com/jenkinsci/jenkinsfile-runner/issues/738)). `jflint` always points `-w`/`-p` back at the WAR and plugins already bundled inside the image, so linting works fully offline and never hits that bug.
+
 ## Requirements
 
 - [Docker](https://docs.docker.com/get-docker/), installed and running.

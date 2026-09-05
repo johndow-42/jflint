@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { parseArgs } = require('../lib/cli');
 const { summarize } = require('../lib/format');
-const { buildLintArgs, DEFAULT_IMAGE } = require('../lib/docker');
+const { buildLintArgs, DEFAULT_IMAGE, DEFAULT_WAR_PATH, DEFAULT_PLUGINS_PATH } = require('../lib/docker');
 
 test('parseArgs defaults to ./Jenkinsfile and the default image', () => {
   const opts = parseArgs([]);
@@ -28,7 +28,7 @@ test('parseArgs recognizes --help and --version', () => {
   assert.equal(parseArgs(['--version']).version, true);
 });
 
-test('buildLintArgs mounts the workspace and points -f at the file inside the container', () => {
+test('buildLintArgs mounts the workspace and points -w/-p at the image\'s bundled Jenkins install', () => {
   const args = buildLintArgs({
     workspaceDir: '/home/user/project',
     jenkinsfileName: 'Jenkinsfile',
@@ -41,19 +41,37 @@ test('buildLintArgs mounts the workspace and points -f at the file inside the co
     '/home/user/project:/workspace',
     DEFAULT_IMAGE,
     'lint',
+    '-w',
+    DEFAULT_WAR_PATH,
+    '-p',
+    DEFAULT_PLUGINS_PATH,
     '-f',
     '/workspace/Jenkinsfile',
   ]);
 });
 
-test('buildLintArgs mounts a plugins directory when given', () => {
+test('buildLintArgs never lets jenkinsfile-runner fall back to downloading a WAR at runtime', () => {
+  // Regression test for the SSL handshake failure caused by the stale
+  // official image's outdated CA trust store
+  // (https://github.com/jenkinsci/jenkinsfile-runner/issues/738): if -w is
+  // ever missing, jenkinsfile-runner silently tries to fetch a fresh WAR
+  // over HTTPS instead of using the one already bundled in the image.
+  const args = buildLintArgs({
+    workspaceDir: '/w',
+    jenkinsfileName: 'Jenkinsfile',
+    image: DEFAULT_IMAGE,
+  });
+  assert.ok(args.includes('-w'), 'buildLintArgs must always pass -w to avoid a runtime WAR download');
+});
+
+test('buildLintArgs mounts a plugins directory at the same path the image expects when given', () => {
   const args = buildLintArgs({
     workspaceDir: '/w',
     jenkinsfileName: 'Jenkinsfile',
     image: DEFAULT_IMAGE,
     pluginsDir: '/my/plugins',
   });
-  assert.ok(args.includes('/my/plugins:/usr/share/jenkins/ref/plugins'));
+  assert.ok(args.includes(`/my/plugins:${DEFAULT_PLUGINS_PATH}`));
 });
 
 test('summarize keeps the success line and drops JVM/pipeline noise', () => {

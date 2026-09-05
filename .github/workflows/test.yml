@@ -15,19 +15,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Debug raw docker invocation
-        if: always()
-        run: |
-          set +e
-          {
-            echo '## Debug: raw docker run against the valid fixture'
-            echo '```'
-            echo '--- docker pull (timeout 180s) ---'
-            timeout 180 docker pull jenkins/jenkinsfile-runner 2>&1
-            echo "pull exit code: $?"
-            echo '--- docker run lint (timeout 120s) ---'
-            timeout 120 docker run --rm -v "$PWD/test/fixtures/valid:/workspace" jenkins/jenkinsfile-runner lint -f /workspace/Jenkinsfile 2>&1
-            echo "run exit code: $?"
-            echo '```'
-          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - run: docker pull jenkins/jenkinsfile-runner
       - run: node --test test/
