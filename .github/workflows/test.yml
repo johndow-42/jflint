@@ -15,4 +15,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Debug raw docker invocation
+        if: always()
+        run: |
+          echo '## Debug: raw docker run against the valid fixture' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          docker pull jenkins/jenkinsfile-runner >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          docker run --rm -v "$PWD/test/fixtures/valid:/workspace" jenkins/jenkinsfile-runner lint -f /workspace/Jenkinsfile >> "$GITHUB_STEP_SUMMARY" 2>&1
+          echo "exit code: $?" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
       - run: node --test test/
